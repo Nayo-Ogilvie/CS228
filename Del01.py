@@ -87,7 +87,7 @@ while True:
         #print("hand detected.")
         Handle_Frame(frame)
         pygameX = Scale(x, xMin, xMax, 0, 600)
-        pygameY = Scale(y, yMin, yMax, 0, 600)
+        pygameY = Scale(y, yMin, yMax, 600, 0)
     pygameWindow.Draw_Black_Circle(pygameX,pygameY)
     #pygameWindow.Draw_Black_Circle(x,y)
     #Perturb_Circle_Position()
