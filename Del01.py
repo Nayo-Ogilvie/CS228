@@ -1,6 +1,6 @@
 import sys
 #Add path to PATH
-sys.path.insert(0,'..')
+sys.path.insert(0,'../x86')
 
 
 import Leap
@@ -14,6 +14,15 @@ from pygameWindow import PYGAME_WINDOW
 pygameWindow = PYGAME_WINDOW()
 x = 300
 y = 300
+pygameX = 300
+pygameY = 300
+xMin = 1000.0
+xMax = -1000.0
+yMin = 1000.0
+yMax = -1000.0
+
+#Initialize controller
+controller = Leap.Controller()
 
 #Function List
 def Perturb_Circle_Position():
@@ -27,14 +36,61 @@ def Perturb_Circle_Position():
         y-=2
     elif (fourSidedDieRoll == 4):
         y+=2
-        
 
+def Scale(value, before_min, before_max, after_min, after_max):
+    if ((before_max - before_min) <= 0):
+        return 0
+    #print("Before min: ", before_min)
+    #print("Before max: ", before_max)
+    #print("value: ", value)
+    scaleValue = (float(value) - float(before_min)) / (float(before_max) - float(before_min))
+    scaledPointValue = (scaleValue * (after_max - after_min)) + after_min
+    #print(scaledPointValue)
+    return int(scaledPointValue)
+    
+def Handle_Frame (frame):
+    global x, y, xMin, xMax, yMin, yMax
+    #print(frame)
+    hand = frame.hands[0]
+    fingers = hand.fingers
+    #Leaving as 1 since that is the integer map and class can't be founds
+    indexFingerList = fingers.finger_type(1)
+    indexFinger = indexFingerList[0]
+    #Same as above making 3 
+    distalPhalanx = indexFinger.bone(3)
+    tip = distalPhalanx.next_joint
+    x = int(tip[0])
+    y = int(tip[1])
+    if ( x < xMin):
+        xMin = x
+    if ( x > xMax):
+        xMax = x
+    if ( y < yMin):
+        yMin = y
+    if ( y > yMax):
+        yMax = y
+    #print("xMin: ", xMin)
+    #print("xMax: ", xMax)
+    #print("yMin: ", yMin)
+    #print("yMax: ", yMax)
+    #print(tip)
+    #print(hand)
+    
 #Infinite Loop
 while True:
     #print('Draw Something.')
+    #print(frame)
     pygameWindow.Prepare()
-    pygameWindow.Draw_Black_Circle(x,y)
-    Perturb_Circle_Position()
+    frame = controller.frame()
+    hands = frame.hands
+    if (not hands.is_empty):
+        #print("hand detected.")
+        Handle_Frame(frame)
+        pygameX = Scale(x, xMin, xMax, 0, 600)
+        pygameY = Scale(y, yMin, yMax, 0, 600)
+    pygameWindow.Draw_Black_Circle(pygameX,pygameY)
+    #pygameWindow.Draw_Black_Circle(x,y)
+    #Perturb_Circle_Position()
     pygameWindow.Reveal()
 
 
