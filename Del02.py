@@ -47,20 +47,11 @@ def Scale(value, before_min, before_max, after_min, after_max):
     scaledPointValue = (scaleValue * (after_max - after_min)) + after_min
     #print(scaledPointValue)
     return int(scaledPointValue)
-    
-def Handle_Frame (frame):
+
+def Handle_Vector_From_Leap(v):
     global x, y, xMin, xMax, yMin, yMax
-    #print(frame)
-    hand = frame.hands[0]
-    fingers = hand.fingers
-    #Leaving as 1 since that is the integer map and class can't be founds
-    indexFingerList = fingers.finger_type(1)
-    indexFinger = indexFingerList[0]
-    #Same as above making 3 
-    distalPhalanx = indexFinger.bone(3)
-    tip = distalPhalanx.next_joint
-    x = int(tip[0])
-    y = int(tip[1])
+    x = int(v[0])
+    y = int(v[2])
     if ( x < xMin):
         xMin = x
     if ( x > xMax):
@@ -69,6 +60,46 @@ def Handle_Frame (frame):
         yMin = y
     if ( y > yMax):
         yMax = y
+    pygameX = Scale(int(v[0]), xMin, xMax, 0, 600)
+    pygameY = Scale(int(v[2]), yMin, yMax, 0, 600)
+    return pygameX, pygameY
+
+def Handle_Bone(bone, i):
+    tip = bone.next_joint
+    base = bone.prev_joint
+    xTip, yTip = Handle_Vector_From_Leap(tip)
+    xBase, yBase = Handle_Vector_From_Leap(base)
+    #invert B so thickest is at wrist
+    invertedI = (4 - i) * 2
+    pygameWindow.Draw_Black_Line(xBase, yBase, xTip, yTip, invertedI)
+    
+def Handle_Finger(finger):
+    for b in range(4):
+        Handle_Bone(finger.bone(b), b)
+
+def Handle_Frame (frame):
+    global x, y, xMin, xMax, yMin, yMax
+    hand = frame.hands[0]
+    fingers = hand.fingers
+    for finger in fingers:
+        Handle_Finger(finger)
+        #print(finger)
+    #Leaving as 1 since that is the integer map and class can't be founds
+    #indexFingerList = fingers.finger_type(1)
+    #indexFinger = indexFingerList[0]
+    #Same as above making 3 
+    #distalPhalanx = indexFinger.bone(3)
+    #tip = distalPhalanx.next_joint
+    #x = int(tip[0])
+    #y = int(tip[1])
+    #if ( x < xMin):
+    #    xMin = x
+    #if ( x > xMax):
+    #    xMax = x
+    #if ( y < yMin):
+    #    yMin = y
+    #if ( y > yMax):
+    #    yMax = y
     #print("xMin: ", xMin)
     #print("xMax: ", xMax)
     #print("yMin: ", yMin)
@@ -86,9 +117,9 @@ while True:
     if (not hands.is_empty):
         #print("hand detected.")
         Handle_Frame(frame)
-        pygameX = Scale(x, xMin, xMax, 0, 600)
-        pygameY = Scale(y, yMin, yMax, 600, 0)
-    pygameWindow.Draw_Black_Circle(pygameX,pygameY)
+        #pygameX = Scale(x, xMin, xMax, 0, 600)
+        #pygameY = Scale(y, yMin, yMax, 600, 0)
+    #pygameWindow.Draw_Black_Circle(pygameX,pygameY)
     #pygameWindow.Draw_Black_Circle(x,y)
     #Perturb_Circle_Position()
     pygameWindow.Reveal()
