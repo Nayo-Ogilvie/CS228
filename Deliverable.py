@@ -1,5 +1,6 @@
 import Leap
 import random
+import numpy as np
 
 #Add classes and variables from other python files
 from pygameWindow_Del03 import PYGAME_WINDOW
@@ -14,26 +15,54 @@ class DELIVERABLE:
         self.xMax = -1000.0
         self.yMin = 1000.0
         self.yMax = -1000.0
-        self.numberOfHands = 0
+        self.currentNumberOfHands = 0
+        self.previousNumberOfHands = 0
+        self.Color = (0,255,0)
+        self.Green = (0,255,0)
+        self.Red = (255,0,0)
+        self.gestureData = np.zeros((5,4,6),dtype='f')
+        
+    def Recording_Is_Ending(self):
+        if (self.currentNumberOfHands < self.previousNumberOfHands):
+            return True
+        else:
+            return False
         
     def Handle_Frame(self, frame):
-        hand = frame.hands[0]
-        fingers = hand.fingers
+        handList = frame.hands
+        self.currentNumberOfHands = len(handList)
+        if (self.currentNumberOfHands > 1):
+            self.Color = self.Red
+        else:
+            self.Color = self.Green
+        DomHand = handList[0]
+        fingers = DomHand.fingers
+        i = 0
         for finger in fingers:
-            self.Handle_Finger(finger)
+            self.Handle_Finger(finger, i)
+            i = i + 1
+        if (self.Recording_Is_Ending()):
+            print(self.gestureData)
             
-    def Handle_Finger(self, finger):
+    def Handle_Finger(self, finger, i):
         for b in range(4):
-            self.Handle_Bone(finger.bone(b), b)
+            self.Handle_Bone(finger.bone(b), i, b)
      
-    def Handle_Bone(self, bone, i):
+    def Handle_Bone(self, bone, i, j):
         tip = bone.next_joint
         base = bone.prev_joint
+        if (self.Recording_Is_Ending()):
+            self.gestureData[i, j, 0] = base[0]
+            self.gestureData[i, j, 1] = base[1]
+            self.gestureData[i, j, 2] = base[2]
+            self.gestureData[i, j, 3] = tip[0]
+            self.gestureData[i, j, 4] = tip[1]
+            self.gestureData[i, j, 5] = tip[2]
         xTip, yTip = self.Handle_Vector_From_Leap(tip)
         xBase, yBase = self.Handle_Vector_From_Leap(base)
         #invert B so thickest is at wrist
-        invertedI = (4 - i) * 2
-        self.pygameWindow.Draw_Black_Line(xBase, yBase, xTip, yTip, invertedI)
+        invertedI = (4 - j) * 2
+        self.pygameWindow.Draw_Black(self.Color, xBase, yBase, xTip, yTip, invertedI)
         
     def Handle_Vector_From_Leap(self, v):
         self.x = int(v[0])
@@ -64,4 +93,5 @@ class DELIVERABLE:
             hands = frame.hands
             if (not hands.is_empty):
                 self.Handle_Frame(frame)
+            self.previousNumberOfHands = self.currentNumberOfHands
             self.pygameWindow.Reveal()
