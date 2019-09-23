@@ -1,6 +1,9 @@
 import Leap
 import random
 import numpy as np
+import pickle
+import os
+import glob
 
 #Add classes and variables from other python files
 from pygameWindow_Del03 import PYGAME_WINDOW
@@ -21,6 +24,23 @@ class DELIVERABLE:
         self.Green = (0,255,0)
         self.Red = (255,0,0)
         self.gestureData = np.zeros((5,4,6),dtype='f')
+        self.gestureRecCount = 0
+        
+    def Remove_Dir(self):
+        fileList = glob.glob("./userData/*")
+        for file in fileList:
+            os.remove(file)
+        os.rmdir("./userData")
+        
+    def Make_Dir(self):
+        os.mkdir("./userData")
+
+    def Save_Gesture(self):
+        gestureString = "./userData/gesture" + str(self.gestureRecCount) + ".p"
+        self.gestureRecCount = self.gestureRecCount + 1
+        pickle_out = open(gestureString,"wb")
+        pickle.dump(self.gestureData,pickle_out)
+        pickle_out.close()
         
     def Recording_Is_Ending(self):
         if (self.currentNumberOfHands < self.previousNumberOfHands):
@@ -42,6 +62,7 @@ class DELIVERABLE:
             self.Handle_Finger(finger, i)
             i = i + 1
         if (self.Recording_Is_Ending()):
+            self.Save_Gesture()
             print(self.gestureData)
             
     def Handle_Finger(self, finger, i):

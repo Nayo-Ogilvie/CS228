@@ -7,7 +7,9 @@ from Deliverable import DELIVERABLE
 new_deliverable = DELIVERABLE()
 
 
-    
+#Initialize
+new_deliverable.Remove_Dir()
+new_deliverable.Make_Dir()
     
 #Infinite Loop
 new_deliverable.Run_Forever()
