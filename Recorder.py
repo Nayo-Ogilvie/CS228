@@ -38,7 +38,7 @@ class RECORDER:
         os.mkdir("./userData")
 
     def Save_Gesture(self):
-        gestureString = "./userData/test4.p"
+        gestureString = "./userData/test6.p"
         pickle_out = open(gestureString,"wb")
         pickle.dump(self.gestureData,pickle_out)
         pickle_out.close()
