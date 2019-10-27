@@ -15,6 +15,21 @@ from pygameWindow import PYGAME_WINDOW
 clf = pickle.load( open('userData/classifier.p', 'rb'))
 testData = np.zeros((1,30),dtype='f')
 
+#Deliverable 8 stuff
+database = pickle.load(open('userData/database.p', 'rb'))
+
+sys.stdout.flush()
+userName = raw_input('Please enter your name: ')
+if userName in database:
+    print('Welcome back ' + userName + '.')
+    database[userName]['logins'] = database[userName]['logins'] + 1
+else:
+    database[userName] = {}
+    database[userName]['logins'] = 1
+    print('Welcome ' + userName + '.')
+
+userRecord = database[userName]
+
 #Variable Init
 pygameWindow = PYGAME_WINDOW()
 x = 300
@@ -31,6 +46,14 @@ programState = 0
 predicted_count = 0
 number_generated = True
 random_number = random.randint(0,9)
+#show this number is attempted again
+attemptString = 'digit' + str(random_number) + 'attempted'
+if (attemptString in userRecord.keys()):
+    userRecord[attemptString] = userRecord[attemptString] + 1
+else:
+    userRecord[attemptString] = 1
+database[userName] = userRecord
+pickle.dump(database,open('userData/database.p', 'wb'))
 imagePath = "./userMoveHand.jpg"
 #Initialize controller
 controller = Leap.Controller()
@@ -113,32 +136,31 @@ def CenterData(X):
     return X
     
 def HandleState0():
-    global programState
+    global programState, random_number, userRecord, attemptString
     pygameWindow.Prepare()
     frame = controller.frame()
     pygameWindow.Show_Image("./userMoveHand.jpg")
     #text = "Should be more"
-    #pygameWindow.Update_Text(str(text))
+    pygameWindow.Update_Text("Attemp Sign " + str(random_number) + ": " + str(userRecord[attemptString]))
     hands = frame.hands
     if (not hands.is_empty):
         programState = 1
     pygameWindow.Reveal()
         
 def HandleState1():
-    global programState, imagePath, random_number
+    global programState, imagePath, random_number, userRecord, attemptString
     pygameWindow.Prepare()
     frame = controller.frame()
     hands = frame.hands
     centered(frame, random_number)
     #text = "Not Centered"
     pygameWindow.Show_Image(imagePath)
+    pygameWindow.Update_Text("Attemp Sign " + str(random_number) + ": " + str(userRecord[attemptString]))
     if (number_generated):
         pygameWindow.Show_Image_Lower("./asl_" + str(random_number) + ".jpg")
     #text = Handle_Frame(frame)
     Handle_Frame(frame)
     #pygameWindow.Hide_Startup_Graphic()
-        
-    #pygameWindow.Update_Text(str(text))
     pygameWindow.Reveal()
     if (hands.is_empty):
         programState = 0
@@ -146,17 +168,26 @@ def HandleState1():
         programState = 2
         
 def HandleState2():
-    global programState, imagePath, predicted_count, number_generated, random_number
+    global programState, imagePath, predicted_count, number_generated, random_number, userRecord, attemptString, userName
     if (not number_generated):
         #generate random number
         random_number = random.randint(0,9)
         pygameWindow.Show_Image_Lower("./asl_" + str(random_number) + ".jpg")
+        #show this number is attempted again
+        attemptString = 'digit' + str(random_number) + 'attempted'
+        if (attemptString in userRecord.keys()):
+            userRecord[attemptString] = userRecord[attemptString] + 1
+        else:
+            userRecord[attemptString] = 1
+        database[userName] = userRecord
+        pickle.dump(database,open('userData/database.p', 'wb'))
         number_generated = True
     pygameWindow.Prepare()
     frame = controller.frame()
     hands = frame.hands
     #text = "Centered"
     pygameWindow.Show_Image(imagePath)
+    pygameWindow.Update_Text("Attemp Sign " + str(random_number) + ": " + str(userRecord[attemptString]))
     pygameWindow.Show_Image_Lower("./asl_" + str(random_number) + ".jpg")
     predicted = Handle_Frame(frame)
     #pygameWindow.Update_Text(str(text))
@@ -173,13 +204,14 @@ def HandleState2():
         programState = 3
         
 def HandleState3():
-    global programState, predicted_count, number_generated, random_number
+    global programState, predicted_count, number_generated, random_number, userRecord, attemptString
     pygameWindow.Prepare()
     frame = controller.frame()
     hands = frame.hands
     #text = "Centered"
     pygameWindow.Show_Image("./checkMark.png")
     pygameWindow.Show_Image_Lower("./asl_" + str(random_number) + ".jpg")
+    pygameWindow.Update_Text("Attemp Sign " + str(random_number) + ": " + str(userRecord[attemptString]))
     #predicted = Handle_Frame(frame)
     #pygameWindow.Update_Text(str(text))
     pygameWindow.Reveal()
@@ -227,6 +259,7 @@ def centered(frame, random_number):
         imagePath = "./userMoveHand_right.jpg"
     return False
 
+print(database)
     
 #Infinite Loop
 while True:

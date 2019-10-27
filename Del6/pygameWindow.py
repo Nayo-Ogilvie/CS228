@@ -22,7 +22,7 @@ class PYGAME_WINDOW:
         
     def Update_Text(self, text):
         textsurface = self.myfont.render(text, False, (0, 0, 0))
-        self.screen.blit(textsurface,(0,0))
+        self.screen.blit(textsurface,(0,550))
         
     def Draw_Black_Circle(self,x,y):
         pygame.draw.circle(self.screen, (0,0,0), (x,y), 10, 10)
