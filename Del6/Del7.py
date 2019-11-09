@@ -26,6 +26,86 @@ if userName in database:
 else:
     database[userName] = {}
     database[userName]['logins'] = 1
+    #0
+    database[userName]['0'] = {}
+    database[userName]['0']['active_time'] = 0
+    database[userName]['0']['correct'] = 0
+    database[userName]['0']['incorrect'] = 0
+    database[userName]['0']['attempts'] = 0
+    database[userName]['0']['level'] = 0
+    database[userName]['0']['previous_num'] = False
+    #1
+    database[userName]['1'] = {}
+    database[userName]['1']['active_time'] = 0
+    database[userName]['1']['correct'] = 0
+    database[userName]['1']['incorrect'] = 0
+    database[userName]['1']['attempts'] = 0
+    database[userName]['1']['level'] = 0
+    database[userName]['1']['previous_num'] = False
+    #2
+    database[userName]['2'] = {}
+    database[userName]['2']['active_time'] = 0
+    database[userName]['2']['correct'] = 0
+    database[userName]['2']['incorrect'] = 0
+    database[userName]['2']['attempts'] = 0
+    database[userName]['2']['level'] = 0
+    database[userName]['2']['previous_num'] = False
+    #3
+    database[userName]['3'] = {}
+    database[userName]['3']['active_time'] = 0
+    database[userName]['3']['correct'] = 0
+    database[userName]['3']['incorrect'] = 0
+    database[userName]['3']['attempts'] = 0
+    database[userName]['3']['level'] = 0
+    database[userName]['3']['previous_num'] = False
+    #4
+    database[userName]['4'] = {}
+    database[userName]['4']['active_time'] = 0
+    database[userName]['4']['correct'] = 0
+    database[userName]['4']['incorrect'] = 0
+    database[userName]['4']['attempts'] = 0
+    database[userName]['4']['level'] = 0
+    database[userName]['4']['previous_num'] = False
+    #5
+    database[userName]['5'] = {}
+    database[userName]['5']['active_time'] = 0
+    database[userName]['5']['correct'] = 0
+    database[userName]['5']['incorrect'] = 0
+    database[userName]['5']['attempts'] = 0
+    database[userName]['5']['level'] = 0
+    database[userName]['5']['previous_num'] = False
+    #6
+    database[userName]['6'] = {}
+    database[userName]['6']['active_time'] = 0
+    database[userName]['6']['correct'] = 0
+    database[userName]['6']['incorrect'] = 0
+    database[userName]['6']['attempts'] = 0
+    database[userName]['6']['level'] = 0
+    database[userName]['6']['previous_num'] = False
+    #7
+    database[userName]['7'] = {}
+    database[userName]['7']['active_time'] = 0
+    database[userName]['7']['correct'] = 0
+    database[userName]['7']['incorrect'] = 0
+    database[userName]['7']['attempts'] = 0
+    database[userName]['7']['level'] = 0
+    database[userName]['7']['previous_num'] = False
+    #8
+    database[userName]['8'] = {}
+    database[userName]['8']['active_time'] = 0
+    database[userName]['8']['correct'] = 0
+    database[userName]['8']['incorrect'] = 0
+    database[userName]['8']['attempts'] = 0
+    database[userName]['8']['level'] = 0
+    database[userName]['8']['previous_num'] = False
+    #9
+    database[userName]['9'] = {}
+    database[userName]['9']['active_time'] = 0
+    database[userName]['9']['correct'] = 0
+    database[userName]['9']['incorrect'] = 0
+    database[userName]['9']['attempts'] = 0
+    database[userName]['9']['level'] = 0
+    database[userName]['9']['previous_num'] = False
     print('Welcome ' + userName + '.')
 
 userRecord = database[userName]
@@ -44,14 +124,49 @@ k = 0
 oldPredicted = 0
 programState = 0
 predicted_count = 0
+wrong_predicted_count = 0
+lastPredicted = 0
 number_generated = True
+time_start = time.time()
 random_number = random.randint(0,9)
-#show this number is attempted again
-attemptString = 'digit' + str(random_number) + 'attempted'
-if (attemptString in userRecord.keys()):
-    userRecord[attemptString] = userRecord[attemptString] + 1
+#get overall status amount
+overallTotalAttemptsStart = 0
+overallCorrectStart = 0
+for userValues in database.keys():
+    print(userValues)
+    for number in range(10):
+        print(number)
+        overallTotalAttemptsStart = overallTotalAttemptsStart + database[userValues][str(number)]['correct'] + database[userValues][str(number)]['incorrect']
+        overallCorrectStart = overallCorrectStart + database[userValues][str(number)]['correct']
+if(overallTotalAttemptsStart != 0):
+    overallPercentRightStart = float(overallCorrectStart) / overallTotalAttemptsStart
 else:
-    userRecord[attemptString] = 1
+    overallPercentRightStart = 0
+print("overall percent: " + str(overallPercentRightStart))
+#get amount for individual user
+totalAttemptsStart = 0
+correctStart = 0
+for number in range(10):
+    print(number)
+    totalAttemptsStart = totalAttemptsStart + userRecord[str(number)]['correct'] + userRecord[str(number)]['incorrect']
+    correctStart = correctStart + userRecord[str(number)]['correct']
+totalAttemptsNow = 0
+correctNow = 0
+if (totalAttemptsStart != 0):
+    percentRightStart = float(correctStart) / totalAttemptsStart
+else:
+    percentRightStart = 0
+print("user percent: " + str(percentRightStart))
+percentRightNow = 0.0
+timer_value = 10
+database[userName][str(random_number)]['previous_num'] = True
+level = database[userName][str(random_number)]['level']
+#show this number is attempted again
+#attemptString = 'digit' + str(random_number) + 'attempted'
+#if (attemptString in userRecord.keys()):
+#    userRecord[attemptString] = userRecord[attemptString] + 1
+#else:
+#    userRecord[attemptString] = 1
 database[userName] = userRecord
 pickle.dump(database,open('userData/database.p', 'wb'))
 imagePath = "./userMoveHand.jpg"
@@ -136,28 +251,76 @@ def CenterData(X):
     return X
     
 def HandleState0():
-    global programState, random_number, userRecord, attemptString
+    global programState, random_number, userRecord, attemptString, time_start, percentRightStart, percentRightNow, overallPercentRightStart
+    #print(userRecord)
     pygameWindow.Prepare()
     frame = controller.frame()
     pygameWindow.Show_Image("./userMoveHand.jpg")
+    pygameWindow.Draw_Progress_Bar(overallPercentRightStart, percentRightStart,percentRightNow)
+    pygameWindow.TicTakToeButton()
     #text = "Should be more"
-    pygameWindow.Update_Text("Attemp Sign " + str(random_number) + ": " + str(userRecord[attemptString]))
+    pygameWindow.Update_Text("Attemp Sign " + str(random_number) + ": " + str(userRecord[str(random_number)]['attempts']))
+    pygameWindow.Update_Text_Timer("Timer: " + str(int(timer_value - (time.time() - time_start))))
     hands = frame.hands
     if (not hands.is_empty):
         programState = 1
     pygameWindow.Reveal()
         
 def HandleState1():
-    global programState, imagePath, random_number, userRecord, attemptString
+    global programState, imagePath, random_number, userRecord, attemptString, time_start, level, percentRightStart, percentRightNow, overallPercentRightStart
     pygameWindow.Prepare()
+    pygameWindow.Draw_Progress_Bar(overallPercentRightStart, percentRightStart,percentRightNow)
     frame = controller.frame()
     hands = frame.hands
     centered(frame, random_number)
     #text = "Not Centered"
     pygameWindow.Show_Image(imagePath)
-    pygameWindow.Update_Text("Attemp Sign " + str(random_number) + ": " + str(userRecord[attemptString]))
-    if (number_generated):
+    pygameWindow.Update_Text("Attemp Sign " + str(random_number) + ": " + str(userRecord[str(random_number)]['attempts']))
+    pygameWindow.Update_Text_Level("Level: " + str(userRecord[str(random_number)]['level']))
+    if (level == 0):
+        pygameWindow.Show_Image(imagePath)
+        #pygameWindow.Update_Text("Attemp Sign " + str(random_number) + ": " + str(userRecord[str(random_number)]['attempts']))
+        #pygameWindow.Update_Text_Level("Level: " + str(userRecord[str(random_number)]['level']))
         pygameWindow.Show_Image_Lower("./asl_" + str(random_number) + ".jpg")
+        predicted = Handle_Frame(frame)
+    elif (level == 1):
+        pygameWindow.Show_Image(imagePath)
+        #pygameWindow.Update_Text("Attemp Sign " + str(random_number) + ": " + str(userRecord[str(random_number)]['attempts']))
+        #pygameWindow.Update_Text_Level("Level: " + str(userRecord[str(random_number)]['level']))
+        if ((time.time() - time_start) > 4):
+            pygameWindow.Update_Text_Big(str(random_number))
+        else:
+            pygameWindow.Show_Image_Lower("./asl_" + str(random_number) + ".jpg")
+            pygameWindow.Update_Text_Big("")
+        predicted = Handle_Frame(frame)
+    elif (level == 2):
+        pygameWindow.Show_Image(imagePath)
+        #pygameWindow.Update_Text("Attemp Sign " + str(random_number) + ": " + str(userRecord[str(random_number)]['attempts']))
+        #pygameWindow.Update_Text_Level("Level: " + str(userRecord[str(random_number)]['level']))
+        if ((time.time() - time_start) > 2):
+            pygameWindow.Update_Text_Big(str(random_number))
+        else:
+            pygameWindow.Show_Image_Lower("./asl_" + str(random_number) + ".jpg")
+            pygameWindow.Update_Text_Big("")
+        predicted = Handle_Frame(frame)
+    elif (level == 3):
+        pygameWindow.Show_Image(imagePath)
+        #pygameWindow.Update_Text("Attemp Sign " + str(random_number) + ": " + str(userRecord[str(random_number)]['attempts']))
+        #pygameWindow.Update_Text_Level("Level: " + str(userRecord[str(random_number)]['level']))
+        if ((time.time() - time_start) > 1):
+            pygameWindow.Update_Text_Big(str(random_number))
+        else:
+            pygameWindow.Show_Image_Lower("./asl_" + str(random_number) + ".jpg")
+            pygameWindow.Update_Text_Big("")
+        predicted = Handle_Frame(frame)
+    elif (level >= 4):
+        #pygameWindow.Update_Text("Attemp Sign " + str(random_number) + ": " + str(userRecord[str(random_number)]['attempts']))
+        #pygameWindow.Update_Text_Level("Level: " + str(userRecord[str(random_number)]['level']))
+        pygameWindow.Update_Text_Big(str(random_number))
+        #pygameWindow.Update_Text_Upper(str(random_number))
+        pygameWindow.Update_Text_Timer("Timer: " + str(int(timer_value - (time.time() - time_start))))
+        predicted = Handle_Frame(frame)
+        #pygameWindow.Show_Image_Lower("./asl_" + str(random_number) + ".jpg")
     #text = Handle_Frame(frame)
     Handle_Frame(frame)
     #pygameWindow.Hide_Startup_Graphic()
@@ -168,17 +331,21 @@ def HandleState1():
         programState = 2
         
 def HandleState2():
-    global programState, imagePath, predicted_count, number_generated, random_number, userRecord, attemptString, userName
+    global programState, imagePath, predicted_count, wrong_predicted_count, number_generated, random_number, userRecord, attemptString, userName, lastPredicted, time_start, level, timer_value, percentRightStart, percentRightNow, overallPercentRightStart
     if (not number_generated):
         #generate random number
-        random_number = random.randint(0,9)
+        #random_number = random.randint(0,9)
+        random_number = pickNumberPhase1()
+        time_start = time.time()
         pygameWindow.Show_Image_Lower("./asl_" + str(random_number) + ".jpg")
+        userRecord[str(random_number)]['attempts'] = userRecord[str(random_number)]['attempts'] + 1
+        level = userRecord[str(random_number)]['level']
         #show this number is attempted again
-        attemptString = 'digit' + str(random_number) + 'attempted'
-        if (attemptString in userRecord.keys()):
-            userRecord[attemptString] = userRecord[attemptString] + 1
-        else:
-            userRecord[attemptString] = 1
+        #attemptString = 'digit' + str(random_number) + 'attempted'
+        #if (attemptString in userRecord.keys()):
+        #    userRecord[attemptString] = userRecord[attemptString] + 1
+        #else:
+        #    userRecord[attemptString] = 1
         database[userName] = userRecord
         pickle.dump(database,open('userData/database.p', 'wb'))
         number_generated = True
@@ -186,14 +353,67 @@ def HandleState2():
     frame = controller.frame()
     hands = frame.hands
     #text = "Centered"
-    pygameWindow.Show_Image(imagePath)
-    pygameWindow.Update_Text("Attemp Sign " + str(random_number) + ": " + str(userRecord[attemptString]))
-    pygameWindow.Show_Image_Lower("./asl_" + str(random_number) + ".jpg")
-    predicted = Handle_Frame(frame)
+    if (level == 0):
+        pygameWindow.Show_Image(imagePath)
+        pygameWindow.Update_Text("Attemp Sign " + str(random_number) + ": " + str(userRecord[str(random_number)]['attempts']))
+        pygameWindow.Update_Text_Level("Level: " + str(userRecord[str(random_number)]['level']))
+        pygameWindow.Show_Image_Lower("./asl_" + str(random_number) + ".jpg")
+        predicted = Handle_Frame(frame)
+    elif (level == 1):
+        pygameWindow.Update_Text("Attemp Sign " + str(random_number) + ": " + str(userRecord[str(random_number)]['attempts']))
+        pygameWindow.Update_Text_Level("Level: " + str(userRecord[str(random_number)]['level']))
+        if ((time.time() - time_start) > 4):
+            pygameWindow.Update_Text_Big(str(random_number))
+            pygameWindow.Update_Text_Upper(str(random_number))
+        else:
+            pygameWindow.Show_Image_Lower("./asl_" + str(random_number) + ".jpg")
+            pygameWindow.Show_Image(imagePath)
+            pygameWindow.Update_Text_Big("")
+        predicted = Handle_Frame(frame)
+    elif (level == 2):
+        #pygameWindow.Show_Image(imagePath)
+        pygameWindow.Update_Text("Attemp Sign " + str(random_number) + ": " + str(userRecord[str(random_number)]['attempts']))
+        pygameWindow.Update_Text_Level("Level: " + str(userRecord[str(random_number)]['level']))
+        if ((time.time() - time_start) > 2):
+            pygameWindow.Update_Text_Big(str(random_number))
+            pygameWindow.Update_Text_Upper(str(random_number))
+        else:
+            pygameWindow.Show_Image_Lower("./asl_" + str(random_number) + ".jpg")
+            pygameWindow.Show_Image(imagePath)
+            pygameWindow.Update_Text_Big("")
+        predicted = Handle_Frame(frame)
+    elif (level == 3):
+        #pygameWindow.Show_Image(imagePath)
+        pygameWindow.Update_Text("Attemp Sign " + str(random_number) + ": " + str(userRecord[str(random_number)]['attempts']))
+        pygameWindow.Update_Text_Level("Level: " + str(userRecord[str(random_number)]['level']))
+        if ((time.time() - time_start) > 1):
+            pygameWindow.Update_Text_Big(str(random_number))
+            pygameWindow.Update_Text_Upper(str(random_number))
+        else:
+            pygameWindow.Show_Image_Lower("./asl_" + str(random_number) + ".jpg")
+            pygameWindow.Show_Image(imagePath)
+            pygameWindow.Update_Text_Big("")
+        predicted = Handle_Frame(frame)
+    elif (level >= 4):
+        pygameWindow.Update_Text("Attemp Sign " + str(random_number) + ": " + str(userRecord[str(random_number)]['attempts']))
+        pygameWindow.Update_Text_Level("Level: " + str(userRecord[str(random_number)]['level']))
+        pygameWindow.Update_Text_Big(str(random_number))
+        pygameWindow.Update_Text_Upper(str(random_number))
+        pygameWindow.Update_Text_Timer("Timer: " + str(int(timer_value - (time.time() - time_start))))
+        predicted = Handle_Frame(frame)
     #pygameWindow.Update_Text(str(text))
+    pygameWindow.Draw_Progress_Bar(overallPercentRightStart, percentRightStart,percentRightNow)
+    pygameWindow.Draw_Hot_Cold_Bar(predicted_count, wrong_predicted_count)
     pygameWindow.Reveal()
     if (predicted == random_number):
         predicted_count = predicted_count + 1
+        wrong_predicted_count = 0
+    elif (predicted != random_number and predicted == lastPredicted):
+        wrong_predicted_count = wrong_predicted_count + 1
+        predicted_count = 0
+    else:
+        wrong_predicted_count = 0
+        lastPredicted = predicted
     if (hands.is_empty):
         programState = 0
         predicted_count = 0
@@ -202,22 +422,35 @@ def HandleState2():
         predicted_count = 0
     elif (predicted_count == 10):
         programState = 3
+    elif ( 0 <= level <= 4 and wrong_predicted_count == 30):
+        programState = 4
+    elif (level >= 4 and (timer_value - (time.time() - time_start)) < 0):
+        programState = 4
         
 def HandleState3():
-    global programState, predicted_count, number_generated, random_number, userRecord, attemptString
+    global programState, predicted_count, number_generated, random_number, userRecord, attemptString, time_start, percentRightStart, percentRightNow, totalAttemptsNow, correctNow, overallPercentRightStart
     pygameWindow.Prepare()
     frame = controller.frame()
     hands = frame.hands
+    totalAttemptsNow = totalAttemptsNow + 1
+    correctNow = correctNow + 1
+    percentRightNow = float(correctNow) / totalAttemptsNow
     #text = "Centered"
+    #Update correct Count 
+    userRecord[str(random_number)]['correct'] = userRecord[str(random_number)]['correct'] + 1
+    userRecord[str(random_number)]['active_time'] = userRecord[str(random_number)]['active_time'] + (time.time() - time_start )
     pygameWindow.Show_Image("./checkMark.png")
     pygameWindow.Show_Image_Lower("./asl_" + str(random_number) + ".jpg")
-    pygameWindow.Update_Text("Attemp Sign " + str(random_number) + ": " + str(userRecord[attemptString]))
+    pygameWindow.Update_Text("Attemp Sign " + str(random_number) + ": " + str(userRecord[str(random_number)]['attempts']))
+    pygameWindow.Update_Text_Level("Level: " + str(userRecord[str(random_number)]['level']))
+    pygameWindow.Draw_Progress_Bar(overallPercentRightStart,percentRightStart,percentRightNow)
     #predicted = Handle_Frame(frame)
     #pygameWindow.Update_Text(str(text))
     pygameWindow.Reveal()
     time.sleep(4)
     predicted_count = 0
     number_generated = False
+    #time_start = time.time()
     if (hands.is_empty):
         programState = 0
     elif (not centered(frame, random_number)):
@@ -225,6 +458,38 @@ def HandleState3():
     else:
         programState = 2
         
+def HandleState4():
+    global programState, predicted_count, number_generated, random_number, userRecord, attemptString, time_start, percentRightStart, percentRightNow, totalAttemptsNow, correctNow, overallPercentRightStart
+    pygameWindow.Prepare()
+    frame = controller.frame()
+    hands = frame.hands
+    totalAttemptsNow = totalAttemptsNow + 1
+    percentRightNow = float(correctNow) / totalAttemptsNow
+    #text = "Centered"
+    #Update incorrect Count 
+    userRecord[str(random_number)]['incorrect'] = userRecord[str(random_number)]['incorrect'] + 1
+    userRecord[str(random_number)]['active_time'] = userRecord[str(random_number)]['active_time'] + (time.time() - time_start )
+    pygameWindow.Show_Image("./incorrect.png")
+    pygameWindow.Show_Image_Lower("./asl_" + str(random_number) + ".jpg")
+    pygameWindow.Update_Text("Attemp Sign " + str(random_number) + ": " + str(userRecord[str(random_number)]['attempts']))
+    pygameWindow.Update_Text_Level("Level: " + str(userRecord[str(random_number)]['level']))
+    pygameWindow.Draw_Progress_Bar(overallPercentRightStart, percentRightStart,percentRightNow)
+    #predicted = Handle_Frame(frame)
+    #pygameWindow.Update_Text(str(text))
+    pygameWindow.Reveal()
+    time.sleep(4)
+    predicted_count = 0
+    number_generated = False
+    #time_start = time.time()
+    if (hands.is_empty):
+        programState = 0
+    elif (not centered(frame, random_number)):
+        programState = 1
+    else:
+        programState = 2
+
+def HandleState5():
+
 def centered(frame, random_number):
     global imagePath
     hand = frame.hands[0]
@@ -260,6 +525,60 @@ def centered(frame, random_number):
     return False
 
 print(database)
+
+def pickNumberPhase1():
+    global userRecord, timer_value
+    #adjust for current min (need to print to find out)
+    currentMin = sys.maxint
+    workOnThese = []
+    #Check if all digits present
+    digits = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+    for value in range(10):
+        if (userRecord[str(value)]['previous_num']):
+            digits.remove(value)
+            userRecord[str(value)]['previous_num'] = False
+    for digit in digits:
+        correct = userRecord[str(digit)]['correct']
+        incorrect = userRecord[str(digit)]['incorrect']
+        score = correct - incorrect
+        if (score <= 0):
+            userRecord[str(digit)]['level'] = 0
+        if (4 > score > 0):
+            userRecord[str(digit)]['level'] = score
+        if (score >= 4):
+            userRecord[str(digit)]['level'] = score
+            timer_value = 14 - score
+        if (score < currentMin):
+            workOnThese = [digit]
+            currentMin = score
+        elif (score == currentMin):
+            workOnThese.append(digit)
+            #if (str(digit) in record):
+            #    print("Already seen " + str(digit))
+            #    digits.remove(digit)
+    #check which is minimum if all digits present
+    #if (len(digits) == 0):
+    #    for record in userRecord.keys():
+    #        if ("digit" in record):
+    #            correctSign = userRecord[record]
+    #            if (correctSign == currentMin):
+    #                workOnThese.append(record)
+    #            elif (correctSign < currentMin):
+    #                currentMin = correctSign
+    #                workOnThese = [record]
+    #select a random number from the ones that aren't correctSign
+        #digits = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+        #tmpDigits = []
+        #print(workOnThese)
+        #for items in workOnThese:
+        #    for digit in digits:
+        #        if (str(digit) in items):
+        #            tmpDigits.append(digit)
+        #digits = tmpDigits
+    nextItem = random.choice(workOnThese)
+    print(nextItem)
+    userRecord[str(nextItem)]['previous_num'] = True
+    return nextItem
     
 #Infinite Loop
 while True:
@@ -271,6 +590,9 @@ while True:
         HandleState2()
     elif (programState == 3):
         HandleState3()
-
+    elif (programState == 4):
+        HandleState4()
+    elif (programState == 5):
+        HandleState5()
 
 print(pygameWindow)
