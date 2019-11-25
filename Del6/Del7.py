@@ -109,7 +109,10 @@ else:
     print('Welcome ' + userName + '.')
 
 userRecord = database[userName]
-
+#setup previous num to be False for all
+for value in range(10):
+    if (userRecord[str(value)]['previous_num']):
+        userRecord[str(value)]['previous_num'] = False
 #Variable Init
 pygameWindow = PYGAME_WINDOW()
 x = 300
@@ -132,6 +135,9 @@ random_number = random.randint(0,9)
 #get overall status amount
 overallTotalAttemptsStart = 0
 overallCorrectStart = 0
+numberSlotArray = [0,0,0,0,0,0,0,0,0]
+filled_value =  np.zeros(9)
+#filled_value = filled_value.reshape(3,3)
 for userValues in database.keys():
     print(userValues)
     for number in range(10):
@@ -238,6 +244,42 @@ def Handle_Frame (frame):
         oldPredicted = predictedClass
     return predictedClass
     
+def Handle_Bone_Tik(bone, i):
+    global testData, k
+    tip = bone.next_joint
+    base = bone.prev_joint
+    xTip, yTip = Handle_Vector_From_Leap(tip)
+    xBase, yBase = Handle_Vector_From_Leap(base)
+    #print(k)
+    #invert B so thickest is at wrist
+    #print(tip[0])
+    #print(tip[1])
+    #print(tip[2])
+    if ( (i == 0) or (i == 3) ):
+        testData[0,k] = tip[0]
+        testData[0,k+1] = tip[1]
+        testData[0,k+2] = tip[2]
+        k = k + 3
+    invertedI = (4 - i) * 2
+    #pygameWindow.Draw_Black_Line(xBase, yBase, xTip, yTip, invertedI)
+    
+def Handle_Finger_Tik(finger):
+    for b in range(4):
+        Handle_Bone_Tik(finger.bone(b), b)
+
+def Handle_Frame_Tik(frame):
+    global x, y, xMin, xMax, yMin, yMax, k, testData, oldPredicted
+    hand = frame.hands[0]
+    fingers = hand.fingers
+    k = 0
+    for finger in fingers:
+        Handle_Finger_Tik(finger)
+    testData = CenterData(testData)
+    predictedClass = clf.Predict(testData)
+    if (predictedClass != oldPredicted):
+        oldPredicted = predictedClass
+    return predictedClass
+    
 def CenterData(X):
     allXCoordinates = X[0,::3]
     meanValue = allXCoordinates.mean()
@@ -257,10 +299,12 @@ def HandleState0():
     frame = controller.frame()
     pygameWindow.Show_Image("./userMoveHand.jpg")
     pygameWindow.Draw_Progress_Bar(overallPercentRightStart, percentRightStart,percentRightNow)
-    pygameWindow.TicTakToeButton()
+    if (pygameWindow.TicTakToeButton()):
+        programState = 5
+    time_start = time.time()
     #text = "Should be more"
-    pygameWindow.Update_Text("Attemp Sign " + str(random_number) + ": " + str(userRecord[str(random_number)]['attempts']))
-    pygameWindow.Update_Text_Timer("Timer: " + str(int(timer_value - (time.time() - time_start))))
+    #pygameWindow.Update_Text("Attemp Sign " + str(random_number) + ": " + str(userRecord[str(random_number)]['attempts']))
+    #pygameWindow.Update_Text_Timer("Timer: " + str(int(timer_value - (time.time() - time_start))))
     hands = frame.hands
     if (not hands.is_empty):
         programState = 1
@@ -489,6 +533,98 @@ def HandleState4():
         programState = 2
 
 def HandleState5():
+    global programState, filled_value, lastPredicted, predicted_count, numberSlotArray
+    pygameWindow.Prepare()
+    if (pygameWindow.TicTakToeButton()):
+        programState = 0
+    print(filled_value)
+    numberSlotArray = pygameWindow.diplayTikTacToe(filled_value, numberSlotArray)
+    pygameWindow.Draw_Hot_Cold_Bar_Tik(predicted_count)
+    frame = controller.frame()
+    hands = frame.hands
+    predicted = Handle_Frame_Tik(frame)
+    pygameWindow.Reveal()
+    if (predicted == lastPredicted):
+        predicted_count = predicted_count + 1
+    else:
+        predicted_count = 0
+        lastPredicted = predicted
+    #Update the predicted count bar..
+    
+    
+    #not centered stuff
+    if (hands.is_empty):
+        #Print Line Not Centered
+        print("No Hands")
+        predicted_count = 0
+    elif (not centered(frame, random_number)):
+        #Print not centered stuff maybe if time add pics
+        print("Not Centered")
+        predicted_count = 0
+    elif (predicted_count == 10):
+        #Fill Spot with an X = 1
+        for item in numberSlotArray:
+            print("Number in spot: " + str(item))
+            if (item == predicted):
+                index_X = numberSlotArray.index(predicted)
+                filled_value[index_X] = 1
+        winner = checkGrid(filled_value)
+        if (winner == 1):
+            Restart_Game(winner)
+        elif ( winner == 2):
+            Restart_Game(winner)
+        #Wait random amount between 1-4 seconds fill spot with O = 2
+        time.sleep(random.randint(1,4))
+        index_O = random.randint(0,8)
+        filled = filled_value[index_O]
+        O_count = 0
+        O_Found = False
+        while(filled != 0):
+            index_O = random.randint(0,8)
+            filled = filled_value[index_O]
+            O_count = O_count + 1
+            if (O_count > 200):
+                for i in range(0,8):
+                    filled = filled_value[i]
+                    if (filled == 0):
+                        index_O = i
+                        O_Found = True
+                        break
+                if (O_Found == False):
+                    Restart_Game(0)
+                break
+        filled_value[index_O] = 2
+    print("Filled Value")
+    print(filled_value)
+    winner = checkGrid(filled_value)
+    if (winner == 1):
+        Restart_Game(winner)
+    elif ( winner == 2):
+        Restart_Game(winner)
+    print("winner: ", str(winner))
+
+def Restart_Game(Winner):
+    global programState, filled_value, lastPredicted, predicted_count, numberSlotArray
+    #Annouce the winner
+    pygameWindow.Prepare()
+    if (pygameWindow.TicTakToeButton()):
+        programState = 0
+    print(filled_value)
+    numberSlotArray = pygameWindow.diplayTikTacToe(filled_value, numberSlotArray)
+    pygameWindow.Show_winner(Winner)
+    frame = controller.frame()
+    hands = frame.hands
+    predicted = Handle_Frame_Tik(frame)
+    pygameWindow.Reveal()
+    time.sleep(6)
+    #Reset everything after 5 seconds
+    programState = 5
+    filled_value = np.zeros(9)
+    lastPredicted = 0
+    predicted_count = 0
+    numberSlotArray = [0,0,0,0,0,0,0,0,0]
+    pygameWindow.set_user_signed(True)
+    
 
 def centered(frame, random_number):
     global imagePath
@@ -541,6 +677,8 @@ def pickNumberPhase1():
         correct = userRecord[str(digit)]['correct']
         incorrect = userRecord[str(digit)]['incorrect']
         score = correct - incorrect
+        print("Digit: " + str(digit))
+        print("Score: " + str(score))
         if (score <= 0):
             userRecord[str(digit)]['level'] = 0
         if (4 > score > 0):
@@ -575,11 +713,36 @@ def pickNumberPhase1():
         #        if (str(digit) in items):
         #            tmpDigits.append(digit)
         #digits = tmpDigits
+    print("Work on these:")
+    print(workOnThese)
     nextItem = random.choice(workOnThese)
     print(nextItem)
     userRecord[str(nextItem)]['previous_num'] = True
     return nextItem
     
+def checkGrid(grid):
+    grid = np.array(grid)
+    grid = grid.reshape(3,3)
+    print("Grid is..")
+    print(grid)
+	# rows
+    for x in range(0,3):
+        row = set([grid[x][0],grid[x][1],grid[x][2]])
+        if len(row) == 1 and grid[x][0] != 0:
+            return grid[x][0]
+	# columns
+    for x in range(0,3):
+        column = set([grid[0][x],grid[1][x],grid[2][x]])
+        if len(column) == 1 and grid[0][x] != 0:
+            return grid[0][x]
+	# diagonals
+	diag1 = set([grid[0][0],grid[1][1],grid[2][2]])
+	diag2 = set([grid[0][2],grid[1][1],grid[2][0]])
+	if len(diag1) == 1 or len(diag2) == 1 and grid[1][1] != 0:
+		return grid[1][1]
+	return 0
+
+
 #Infinite Loop
 while True:
     if (programState == 0):
