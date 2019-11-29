@@ -125,7 +125,7 @@ yMin = 1000.0
 yMax = -1000.0
 k = 0
 oldPredicted = 0
-programState = 0
+programState = 6
 predicted_count = 0
 wrong_predicted_count = 0
 lastPredicted = 0
@@ -291,7 +291,13 @@ def CenterData(X):
     meanValue = allXCoordinates.mean()
     X[0,2::3] = allXCoordinates - meanValue
     return X
-    
+
+def HandleStateA():
+    global programState
+    pygameWindow.Prepare()
+    programState = pygameWindow.displayOpenningWindow()
+    pygameWindow.Reveal()
+
 def HandleState0():
     global programState, random_number, userRecord, attemptString, time_start, percentRightStart, percentRightNow, overallPercentRightStart
     #print(userRecord)
@@ -299,8 +305,8 @@ def HandleState0():
     frame = controller.frame()
     pygameWindow.Show_Image("./userMoveHand.jpg")
     pygameWindow.Draw_Progress_Bar(overallPercentRightStart, percentRightStart,percentRightNow)
-    if (pygameWindow.TicTakToeButton()):
-        programState = 5
+    if (pygameWindow.MenuButton()):
+        programState = 6
     time_start = time.time()
     #text = "Should be more"
     #pygameWindow.Update_Text("Attemp Sign " + str(random_number) + ": " + str(userRecord[str(random_number)]['attempts']))
@@ -535,14 +541,14 @@ def HandleState4():
 def HandleState5():
     global programState, filled_value, lastPredicted, predicted_count, numberSlotArray
     pygameWindow.Prepare()
-    if (pygameWindow.TicTakToeButton()):
-        programState = 0
     print(filled_value)
     numberSlotArray = pygameWindow.diplayTikTacToe(filled_value, numberSlotArray)
     pygameWindow.Draw_Hot_Cold_Bar_Tik(predicted_count)
     frame = controller.frame()
     hands = frame.hands
     predicted = Handle_Frame_Tik(frame)
+    if (pygameWindow.MenuButton()):
+        programState = 6
     pygameWindow.Reveal()
     if (predicted == lastPredicted):
         predicted_count = predicted_count + 1
@@ -602,13 +608,16 @@ def HandleState5():
     elif ( winner == 2):
         Restart_Game(winner)
     print("winner: ", str(winner))
+    
+    #if (pygameWindow.MenuButton()):
+    #    programState = 6
 
 def Restart_Game(Winner):
     global programState, filled_value, lastPredicted, predicted_count, numberSlotArray
     #Annouce the winner
     pygameWindow.Prepare()
-    if (pygameWindow.TicTakToeButton()):
-        programState = 0
+    if (pygameWindow.MenuButton()):
+        programState = 6
     print(filled_value)
     numberSlotArray = pygameWindow.diplayTikTacToe(filled_value, numberSlotArray)
     pygameWindow.Show_winner(Winner)
@@ -757,5 +766,7 @@ while True:
         HandleState4()
     elif (programState == 5):
         HandleState5()
+    elif (programState == 6):
+        HandleStateA()
 
 print(pygameWindow)

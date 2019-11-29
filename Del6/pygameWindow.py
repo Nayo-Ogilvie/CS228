@@ -118,7 +118,7 @@ class PYGAME_WINDOW:
         rect = rect.move((300, 300))
         self.screen.blit(self.startup_image, rect)
         
-    def TicTakToeButton(self):
+    def MenuButton(self):
         button = pygame.Rect(25+(183), 560, 183, 30)
         #print("suuper")
         for event in pygame.event.get():
@@ -138,10 +138,12 @@ class PYGAME_WINDOW:
         self.screen.blit(textsurface,(285,552))
         return False
     
+    
     def set_user_signed(self, TorF):
         self.userSigned = TorF
     
     def Show_winner(self, winner):
+        #NEED TO ATTACH information
         if (winner == 1):
             textsurface = self.ticfont.render("Winner", False, (0, 128, 0))
             self.screen.blit(textsurface,(100,300))
@@ -151,6 +153,41 @@ class PYGAME_WINDOW:
         elif (winner == 0):
             textsurface = self.ticfont.render("Tie", False, (0, 0, 0))
             self.screen.blit(textsurface,(100,300))
+            
+    def displayOpenningWindow(self):
+        #Learning
+        self.startup_image_stuff = pygame.image.load(os.path.join("./hat_icon.png"))
+        self.startup_image_stuff = pygame.transform.scale(self.startup_image_stuff, (270, 270))
+        #Game
+        self.startup_image_tik_tak = pygame.image.load(os.path.join("./tik_tak_toe_icon.JFIF"))
+        self.startup_image_tik_tak = pygame.transform.scale(self.startup_image_tik_tak, (270, 270))
+        
+        rect = self.startup_image_stuff.get_rect()
+        rect = rect.move((150, 30))
+        
+        rect_tik_tak = self.startup_image_tik_tak.get_rect()
+        rect_tik_tak = rect_tik_tak.move((150, 300))
+        
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                #print("why")
+                mouse_pos = event.pos  # gets mouse position
+                # checks if mouse position is over the button
+                if rect.collidepoint(mouse_pos):
+                    # prints current location of mouse
+                    print('button was pressed at {0}'.format(mouse_pos))
+                    return 0
+                if rect_tik_tak.collidepoint(mouse_pos):
+                    # prints current location of mouse
+                    print('button was pressed at {0}'.format(mouse_pos))
+                    return 5
+        
+        self.screen.blit(self.startup_image_stuff, rect)
+        self.screen.blit(self.startup_image_tik_tak, rect_tik_tak)
+        return 6
     
     def diplayTikTacToe(self, filled_value, Sample):
         #draw the tik tak toe board verticle
