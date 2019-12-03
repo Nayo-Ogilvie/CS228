@@ -145,14 +145,23 @@ class PYGAME_WINDOW:
     def Show_winner(self, winner):
         #NEED TO ATTACH information
         if (winner == 1):
-            textsurface = self.ticfont.render("Winner", False, (0, 128, 0))
-            self.screen.blit(textsurface,(100,300))
+            self.outcome = pygame.image.load(os.path.join("./winner.png"))
+            self.outcome = pygame.transform.scale(self.outcome, (270, 270))
+            rect = self.outcome.get_rect()
+            rect = rect.move((150, 150))
+            self.screen.blit(self.outcome, rect)
         elif (winner == 2):
-            textsurface = self.ticfont.render("Loser", False, (128, 0, 0))
-            self.screen.blit(textsurface,(100,300))
+            self.outcome = pygame.image.load(os.path.join("./loser.png"))
+            self.outcome = pygame.transform.scale(self.outcome, (270, 270))
+            rect = self.outcome.get_rect()
+            rect = rect.move((150, 150))
+            self.screen.blit(self.outcome, rect)
         elif (winner == 0):
-            textsurface = self.ticfont.render("Tie", False, (0, 0, 0))
-            self.screen.blit(textsurface,(100,300))
+            self.outcome = pygame.image.load(os.path.join("./tie.png"))
+            self.outcome = pygame.transform.scale(self.outcome, (270, 270))
+            rect = self.outcome.get_rect()
+            rect = rect.move((150, 150))
+            self.screen.blit(self.outcome, rect)
             
     def displayOpenningWindow(self):
         #Learning

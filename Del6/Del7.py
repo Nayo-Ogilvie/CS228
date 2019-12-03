@@ -540,9 +540,25 @@ def HandleState4():
 
 def HandleState5():
     global programState, filled_value, lastPredicted, predicted_count, numberSlotArray
+    winner = checkGrid(filled_value)
+    if (checkTie(filled_value)):
+        Restart_Game(0)
+    if (winner == 1):
+        Restart_Game(winner)
+    elif ( winner == 2):
+        Restart_Game(winner)
+    print("winner: ", str(winner))
     pygameWindow.Prepare()
     print(filled_value)
     numberSlotArray = pygameWindow.diplayTikTacToe(filled_value, numberSlotArray)
+    #got through filled values that can't be added
+    count = 0
+    taken_numbers = set()
+    for item in filled_value:
+        if (item != 0):
+            taken_numbers.add(numberSlotArray[count])
+        count = count + 1
+    set_length = len(taken_numbers)
     pygameWindow.Draw_Hot_Cold_Bar_Tik(predicted_count)
     frame = controller.frame()
     hands = frame.hands
@@ -550,7 +566,9 @@ def HandleState5():
     if (pygameWindow.MenuButton()):
         programState = 6
     pygameWindow.Reveal()
-    if (predicted == lastPredicted):
+    taken_numbers.add(predicted)
+    tmp_set_length = len(taken_numbers)
+    if (predicted == lastPredicted and tmp_set_length != set_length):
         predicted_count = predicted_count + 1
     else:
         predicted_count = 0
@@ -585,23 +603,25 @@ def HandleState5():
         filled = filled_value[index_O]
         O_count = 0
         O_Found = False
-        while(filled != 0):
-            index_O = random.randint(0,8)
-            filled = filled_value[index_O]
-            O_count = O_count + 1
-            if (O_count > 200):
-                for i in range(0,8):
-                    filled = filled_value[i]
-                    if (filled == 0):
-                        index_O = i
-                        O_Found = True
-                        break
-                if (O_Found == False):
-                    Restart_Game(0)
-                break
+        if (filled != 0):
+            while(filled != 0):
+                index_O = random.randint(0,8)
+                filled = filled_value[index_O]
+                O_count = O_count + 1
+                if (O_count > 200):
+                    for i in range(0,8):
+                        filled = filled_value[i]
+                        if (filled == 0):
+                            index_O = i
+                            O_Found = True
+                            break
+                    if (O_Found == False):
+                        Restart_Game(0)
+                    break
         filled_value[index_O] = 2
     print("Filled Value")
     print(filled_value)
+    #Check Winner Before and After!
     winner = checkGrid(filled_value)
     if (winner == 1):
         Restart_Game(winner)
@@ -737,20 +757,31 @@ def checkGrid(grid):
 	# rows
     for x in range(0,3):
         row = set([grid[x][0],grid[x][1],grid[x][2]])
-        if len(row) == 1 and grid[x][0] != 0:
+        print("Row")
+        print(x)
+        print(row)
+        if (len(row) == 1 and grid[x][0] != 0):
             return grid[x][0]
 	# columns
-    for x in range(0,3):
-        column = set([grid[0][x],grid[1][x],grid[2][x]])
-        if len(column) == 1 and grid[0][x] != 0:
-            return grid[0][x]
-	# diagonals
-	diag1 = set([grid[0][0],grid[1][1],grid[2][2]])
-	diag2 = set([grid[0][2],grid[1][1],grid[2][0]])
-	if len(diag1) == 1 or len(diag2) == 1 and grid[1][1] != 0:
-		return grid[1][1]
-	return 0
+    for y in range(0,3):
+        column = set([grid[0][y],grid[1][y],grid[2][y]])
+        print("Column")
+        print(y)
+        print(column)
+        if (len(column) == 1 and grid[0][y] != 0):
+            return grid[0][y]
+    # diagonals
+    diag1 = set([grid[0][0],grid[1][1],grid[2][2]])
+    diag2 = set([grid[0][2],grid[1][1],grid[2][0]])
+    if len(diag1) == 1 or len(diag2) == 1 and grid[1][1] != 0:
+        return grid[1][1]
+    return 0
 
+def checkTie(grid):
+    for item in grid:
+        if item == 0:
+            return False
+    return True
 
 #Infinite Loop
 while True:
